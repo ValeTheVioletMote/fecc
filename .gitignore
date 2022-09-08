@@ -1,0 +1,11 @@
+junk.scala
+/*.png
+/resources
+.vscode
+.metals
+target
+project/project
+.bsp
+.bloop
+metals.sbt
+practice.scala
