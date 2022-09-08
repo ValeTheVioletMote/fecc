@@ -375,16 +375,6 @@ object FireEmblemCharacterCreator extends Frame  {
             }
         }
 
-
-        def adjust_img( img: BufferedImage, scale: Float, rotate: Int ): BufferedImage =
-            if scale == 1.0 && rotate == 0 then img
-            else
-                var ret = if scale != 1.0 then resize_buffimg( img, scale ) else img
-                ret = if rotate != 0 then rotate_buffimg( ret, rotate ) else ret
-                ret
-
-
-
         for tbo <- TBOs
             b <- tbo.oselect.get_back_image()
             img = adjust_img(img=b, scale=tbo.get_scale, rotate=tbo.get_rotate)
@@ -440,7 +430,7 @@ object FireEmblemCharacterCreator extends Frame  {
         val faceimg = Face.oselect.get_image()
 
         class CoordTranslator( ot: OptionToolbox ):
-            val img = ot.oselect.get_image()
+            val img = adjust_img(img=ot.oselect.get_image(), scale=ot.get_scale, rotate=ot.get_rotate)
             val img_to_portrait = (for 
                 x <- 0 until img.getWidth()
                 y <- 0 until img.getHeight()
@@ -480,9 +470,27 @@ object FireEmblemCharacterCreator extends Frame  {
                 yield ( (px, py) -> DirectionalFind(c, (x, y)) )).toMap
                 
 
-
         val HAIRT = CoordTranslator( HairTB )
         val FACET = CoordTranslator( Face )
+
+
+        val rixmap = for
+            (idx, civ) <- Skin.cidxs
+        yield ( ( civ match {
+            case ColorIndexVal.Darker(n) => n
+            case ColorIndexVal.Lighter(n) => -n
+            case ColorIndexVal.Normal => 0
+        } ) 
+        -> (idx, Skin.shades(idx)) )
+        
+        val ncDark = rixmap(1)._2.getRGB()
+        val ncLight = rixmap(0)._2.getRGB()
+
+        def can_override_face_pixel( x: Int, y: Int, rixmap_threshold: Int = 1 ): Boolean =
+            val override_ridx = Color(FACET.img.getRGB( x, y ), true).getRed() / 10
+            (for 
+                rmi <- rixmap.find( (_, rixand) => rixand._1 == override_ridx )
+            yield rmi._1 < rixmap_threshold).getOrElse(false)
 
         def op_on_scaled(x: Int, y: Int)(op: (new_x: Int, new_y: Int) => Unit): Unit =
             val nx = x * 2
@@ -503,30 +511,20 @@ object FireEmblemCharacterCreator extends Frame  {
             aps = HAIRT.adjacent_points( img_coords, FACET )
             if aps.size > 0
         do {
-            val rixmap = for
-                (idx, civ) <- Skin.cidxs
-            yield ( ( civ match {
-                case ColorIndexVal.Darker(n) => n
-                case ColorIndexVal.Lighter(n) => -n
-                case ColorIndexVal.Normal => 0
-            } ) 
-            -> (idx, Skin.shades(idx)) )
-            
-            val ncDark = rixmap(1)._2.getRGB()
-            val ncLight = rixmap(0)._2.getRGB()
 
             // Loop through all of the Adjacent Points - i.e. pixels next to the hair border that are part of the face
             // Set the inital color darker then move out 1 square more in the same direction as the pixel was found
                 // and make that a shade lighter
             for a <- aps do {
                 val (ax, ay) = a._1
-                written_pixels += ( a._1 )
-
-
-                op_on_scaled(ax, ay) { (nx, ny) =>
-                    portrait.setRGB( nx, ny, ncDark )
-                }
-                Portrait.fesize_img.setRGB( ax, ay, ncDark )
+                
+                if can_override_face_pixel(ax, ay, 2) then
+                    written_pixels += ( a._1 )
+                    op_on_scaled(ax, ay) { (nx, ny) =>
+                        portrait.setRGB( nx, ny, ncDark )
+                    }
+                    Portrait.fesize_img.setRGB( ax, ay, ncDark )
+                    
 
                 val (dx, dy) = a._2.directions
                 val (ix, iy) = a._2.img_coords
@@ -539,11 +537,9 @@ object FireEmblemCharacterCreator extends Frame  {
                     // Finally, check if this is a pixel we've already colored darker via written_pixels
 
                 val (lix, liy) = (ix + dx, iy + dy)
-                if HAIRT.portrait_to_img.contains( (lix, liy) ) == false then
-                    val override_ridx = Color(FACET.img.getRGB( lix, liy ), true).getRed() / 10
+                if HAIRT.portrait_to_img.contains( (lix, liy) ) == false 
+                    && can_override_face_pixel( lix, liy ) then
                     for 
-                        rmi <- rixmap.find( (_, rixand) => rixand._1 == override_ridx )
-                        if rmi._1 < 1
                         (over_x, over_y) <- FACET.img_to_portrait.get( lix, liy )
                         if written_pixels.contains( (over_x, over_y) ) == false
                     do {
@@ -638,7 +634,15 @@ object PixelParser {
                 getter()
 
 }
-        
+
+def adjust_img( img: BufferedImage, scale: Float, rotate: Int ): BufferedImage =
+    if scale == 1.0 && rotate == 0 then img
+    else
+        var ret = if scale != 1.0 then resize_buffimg( img, scale ) else img
+        ret = if rotate != 0 then rotate_buffimg( ret, rotate ) else ret
+        ret
+
+
 def resize_buffimg(src: BufferedImage, ratio: Double): BufferedImage =
     val (h,w) = ((src.getHeight() * ratio).toInt, (src.getWidth() * ratio).toInt)
     val ret = BufferedImage(w, h, src.getTransparency())
