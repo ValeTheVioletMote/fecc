@@ -9,3 +9,4 @@ project/project
 .bloop
 metals.sbt
 practice.scala
+/release
