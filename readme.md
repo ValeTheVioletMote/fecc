@@ -8,7 +8,7 @@ Updated by BaconMaster120! (v2)
 
 Converted to Scala and updated again by Vale the Violet Mote (v3)
 
-Using AK's Skin Palettes and Blade's FE (hair) Palettes!
+Using Blade's FE Hair & Skin Palettes!
 
 v3 Changelog:
 - Rewritten in Scala 
