@@ -34,3 +34,4 @@ v3 Bugs Found:
 - Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
 - Portrait border cuts off pixels
 - Lack of control over AA's two colors used
+- Large token images (e.g. FalcoKnight) throw an out of bounds error.
