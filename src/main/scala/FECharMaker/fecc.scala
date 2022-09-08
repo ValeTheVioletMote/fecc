@@ -135,13 +135,49 @@ object ColorIndices {
 
 val DEFAULT_BORDER_COLOR = Color(0,0,0,255) 
 
-// with ChangeListener with ItemListener with ActionListener
+
+
 object FireEmblemCharacterCreator extends Frame  {
     FireEmblemCharacterCreator.peer.setIconImage( ImageIO.read(getClass().getResource("images/tiras.png")) )
 
     private val GeneralPadding = 20
+    private val FinalButtonsDim = Dimension(100, 30)
+    private val FinalTextsDim = Dimension( FinalButtonsDim.width * 2, FinalButtonsDim.height )
 
     trait Paneled ( var panel: ImagePanel )
+
+    object ColorCounter extends Elem {
+        private val pfx = "Unique Colors: "
+        val lbl = Label(pfx)
+        lbl.preferredSize = FinalTextsDim
+        preferredSize = FinalTextsDim
+        border = LineBorder(Color.GRAY, 1)
+        val children = Seq(ElemLiteral(lbl))
+        def set(num: Int) =
+            lbl.text = pfx + num
+    }
+
+    object Exporter extends Elem {
+
+        private val filename_inp = TextField("base_file_name")
+        filename_inp.preferredSize = FinalTextsDim
+
+        private val btn = Button("Export")(export_image())
+        btn.preferredSize = FinalButtonsDim
+
+        preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalTextsDim.height )
+
+        val children = Seq( ElemLiteral( filename_inp ), ElemLiteral(btn , rely = filename_inp.preferredSize.height ))
+
+
+        def export_image(): Unit =
+            val path = Paths.get(".")
+            val file_out = File(path.resolve(filename_inp.text+".png").toAbsolutePath().toString())
+            try
+                ImageIO.write( Portrait.panel.image, "PNG", file_out )
+            catch
+                _ => println("Unable to write to file: " + path.resolve("test.png").toAbsolutePath().toString())
+    }
 
 
     class ImageViewer(private val blank: "Portrait" | "Tok", val dim: Dimension ) extends Elem:
@@ -198,18 +234,10 @@ object FireEmblemCharacterCreator extends Frame  {
     val BodyColors = Seq( Hair, Skin, Metal, Trim, Cloth, Leather )
     val FaceColors = Seq( Eyes, Skin, Accessory, Trim, Cloth, Leather )
 
-    // var BlankPortrait = ColoredImage( Color(0, 0, 0, 0) )
-    // var BlankToken = ColoredImage( Color(0, 0, 0, 0) )
-    // var StartCC = new Colored( Color(0, 0, 0, 0) ) {}
-    // var NewCC = new Colored( Color(0, 0, 0, 0) ) {}
-
 
     val Elements: IndexedSeq[ ColorSelectDisplay | OptionToolbox | ImageViewer | ImageSelector ]
         = IndexedSeq(Portrait, TokenImg, Token, Face, Armor, Hair, HairTB, Eyes, Skin
         , Metal, Trim, Cloth, Leather, Accessory, AccessoryTB)
-        // , BlankPortrait, BlankToken, StartCC, NewCC)
-	
-    // private var serialVersionUID: Long = -7435578396712824308L
 
     var ExportFileName: TextField = TextField()
     var Sliders = Array[Slider]()
@@ -221,7 +249,6 @@ object FireEmblemCharacterCreator extends Frame  {
 
     font = Font("Calibri", Font.Bold, 12)
     title = "Fire Emblem Character Creator"
-
 
 
 
@@ -260,18 +287,17 @@ object FireEmblemCharacterCreator extends Frame  {
         Body.render_elem(tb, GeneralPadding, row2_y)
     }
 
-    val ExportButton = Button("Export")(export_image())
-    ExportButton.preferredSize = Dimension(100, 30)
+    Body.render_elem( ColorCounter, GeneralPadding + toolbox_options.length * toolbox_options(0).preferredSize.width + GeneralPadding, row2_y )
 
-    Body.render_elem( ElemLiteral(ExportButton), GeneralPadding + toolbox_options.length * toolbox_options(0).preferredSize.width, row2_y )
+    Body.render_elem( Exporter, ColorCounter.peer.getX(), GeneralPadding + ColorCounter.peer.getY() + ColorCounter.preferredSize.height )
 
     val AntiAliasButton = Button("AntiAlias")(draw_antialias())
-    AntiAliasButton.preferredSize = Dimension(100,30)
-    Body.render_elem( ElemLiteral(AntiAliasButton), ExportButton.peer.getX(), row2_y + ExportButton.preferredSize.height )
+    AntiAliasButton.preferredSize = FinalButtonsDim
+    Body.render_elem( ElemLiteral(AntiAliasButton), Exporter.peer.getX(), GeneralPadding + Exporter.peer.getY() + Exporter.preferredSize.height )
 
     private val tool_height = row2_y + toolbox_options(0).preferredSize.height
 
-    PreviewSelector.set_size(Dimension(200, tool_height ))
+    PreviewSelector.set_size(Dimension( (FinalButtonsDim.width * 1.5).toInt, tool_height ))
 
     Body.render_elem( PreviewSelector, GeneralPadding + upper_right_offset, 0 )
     upper_right_offset += PreviewSelector.preferredSize.width
@@ -281,13 +307,6 @@ object FireEmblemCharacterCreator extends Frame  {
 
 
 
-    def export_image(): Unit =
-        val path = Paths.get(".")
-        val file_out = File(path.resolve("test.png").toAbsolutePath().toString())
-        try
-            ImageIO.write( Portrait.panel.image, "PNG", file_out )
-        catch
-            _ => println("Unable to write to file: " + path.resolve("test.png").toAbsolutePath().toString())
         
 
     def draw_images(): Unit = {
@@ -299,6 +318,8 @@ object FireEmblemCharacterCreator extends Frame  {
 
         val TBOs = toolbox_options.sortBy(_.draw_priority)
 
+        val unique_colors = scala.collection.mutable.Set.empty[Color]
+
 
         def draw_pixel( img: BufferedImage, x: Int, y: Int, dx: Int, dy: Int, parser: PixelParser.Type, border_color: Color ): Unit = {
             val ox = (x+dx)*2
@@ -307,6 +328,7 @@ object FireEmblemCharacterCreator extends Frame  {
                 pixel = Color( img.getRGB( x, y ), true )
                 if(pixel.getAlpha() != 0) {
                     new_pixel = PixelParser(pixel, parser, border_color)
+                    unique_colors += new_pixel
                     val rgb = new_pixel.getRGB()
 
                     //Image size x4
@@ -346,7 +368,7 @@ object FireEmblemCharacterCreator extends Frame  {
             dx = ( ( tbo.get_offx / 100.0) * portrait.getWidth() / 2 ).toInt
         do draw_pixel(img=img, x=x, y=y , dx=dx, dy=dy, parser=tbo.pixel_parser, tbo.border_color_btn.get_color)
 
-
+        ColorCounter.set( unique_colors.size )
         Portrait.panel.setImage( portrait )
         Portrait.panel.repaint()
     }
