@@ -23,8 +23,8 @@ v3 Changelog:
 - Full control over each shade in a palette
 - Prefab Palettes (again with unique for skin)
 - "Anti-Aliasing" of where the hair meets the face
-
-To be done:
 - Unique colors in use counter
 - Export of GBA compatible size png
+
+To be done:
 - Token display & export rewrite

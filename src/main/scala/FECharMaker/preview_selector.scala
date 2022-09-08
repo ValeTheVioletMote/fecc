@@ -9,7 +9,7 @@ import scala.swing.Label
 import java.awt.Dimension
 import scala.swing.ScrollPane
 import java.awt.image.BufferedImage
-import FireEmblemCharacterCreator.Portrait
+import FECharMaker.deep_copy_sized
 import Toolbox.ImageSelector
 import javax.swing.ImageIcon
 
@@ -17,9 +17,7 @@ object PreviewSelector extends Elem {
 
     def colorize_image(img: BufferedImage, pp: PixelParser.Type, back_image: Option[BufferedImage]=None): BufferedImage =
         // val r = img.getRaster()
-        val cm = Portrait.blank_img.getColorModel()
-        val ret = new BufferedImage( cm , cm.createCompatibleWritableRaster(img.getWidth(), img.getHeight()) 
-            , cm.isAlphaPremultiplied() , null )
+        val ret = deep_copy_sized(img.getWidth(), img.getHeight())
         def write_img( from: BufferedImage ): Unit =
             for
                 x <- 0 until from.getWidth()

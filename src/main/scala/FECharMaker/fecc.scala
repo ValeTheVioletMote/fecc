@@ -141,8 +141,8 @@ object FireEmblemCharacterCreator extends Frame  {
     FireEmblemCharacterCreator.peer.setIconImage( ImageIO.read(getClass().getResource("images/tiras.png")) )
 
     private val GeneralPadding = 20
-    private val FinalButtonsDim = Dimension(100, 30)
-    private val FinalTextsDim = Dimension( FinalButtonsDim.width * 2, FinalButtonsDim.height )
+    private val FinalButtonsDim = Dimension( 150, 30 )
+    private val FinalTextsDim = Dimension( 200 , FinalButtonsDim.height )
 
     trait Paneled ( var panel: ImagePanel )
 
@@ -159,24 +159,38 @@ object FireEmblemCharacterCreator extends Frame  {
 
     object Exporter extends Elem {
 
+        val FESmallDim = Dimension(96,96)
+
         private val filename_inp = TextField("base_file_name")
         filename_inp.preferredSize = FinalTextsDim
 
-        private val btn = Button("Export")(export_image())
-        btn.preferredSize = FinalButtonsDim
+        private val norm_export = Button("Export")(export_image(Portrait.panel.image))
+        norm_export.preferredSize = FinalButtonsDim
 
-        preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalTextsDim.height )
+        private val small_export = Button(s"Export ${FESmallDim.width}x${FESmallDim.height}")
+            (export_image(Portrait.fesize_img, s"_${FESmallDim.width}_${FESmallDim.height}"))
+        small_export.preferredSize = FinalButtonsDim
 
-        val children = Seq( ElemLiteral( filename_inp ), ElemLiteral(btn , rely = filename_inp.preferredSize.height ))
+        private val token_export = Button("Export Token")(export_image(Portrait.panel.image))
+        token_export.preferredSize = FinalButtonsDim
+
+        preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalButtonsDim.height * 3 )
+
+        val children = Seq( ElemLiteral( filename_inp )
+            , ElemLiteral(norm_export , rely = filename_inp.preferredSize.height )
+            , ElemLiteral(small_export , rely = filename_inp.preferredSize.height + FinalButtonsDim.height )
+            , ElemLiteral(token_export , rely = filename_inp.preferredSize.height + FinalButtonsDim.height *2 )
+        )
 
 
-        def export_image(): Unit =
+        def export_image(img: BufferedImage, suffix: String=""): Unit =
             val path = Paths.get(".")
-            val file_out = File(path.resolve(filename_inp.text+".png").toAbsolutePath().toString())
+            val file_out_pathstr = path.resolve(filename_inp.text+suffix+".png").toAbsolutePath().toString()
+            val file_out = File(file_out_pathstr)
             try
-                ImageIO.write( Portrait.panel.image, "PNG", file_out )
+                ImageIO.write( img, "PNG", file_out )
             catch
-                _ => println("Unable to write to file: " + path.resolve("test.png").toAbsolutePath().toString())
+                _ => println("Unable to write to file: " + file_out_pathstr)
     }
 
 
@@ -185,6 +199,7 @@ object FireEmblemCharacterCreator extends Frame  {
         val panel = ImagePanel( blank_path.toString() )
         val blank_img = ImageIO.read( blank_path.toFile() )
         if(blank_img == null) then println( blank_path.toString()+" is bad path!" )
+        var fesize_img = blank_img
         val children = Seq( ElemLiteral(panel) )
         preferredSize = dim
 
@@ -289,11 +304,12 @@ object FireEmblemCharacterCreator extends Frame  {
 
     Body.render_elem( ColorCounter, GeneralPadding + toolbox_options.length * toolbox_options(0).preferredSize.width + GeneralPadding, row2_y )
 
-    Body.render_elem( Exporter, ColorCounter.peer.getX(), GeneralPadding + ColorCounter.peer.getY() + ColorCounter.preferredSize.height )
-
     val AntiAliasButton = Button("AntiAlias")(draw_antialias())
     AntiAliasButton.preferredSize = FinalButtonsDim
-    Body.render_elem( ElemLiteral(AntiAliasButton), Exporter.peer.getX(), GeneralPadding + Exporter.peer.getY() + Exporter.preferredSize.height )
+    Body.render_elem( ElemLiteral(AntiAliasButton), ColorCounter.peer.getX(), GeneralPadding + ColorCounter.peer.getY() + ColorCounter.preferredSize.height )
+
+    Body.render_elem( Exporter, AntiAliasButton.peer.getX(), GeneralPadding + AntiAliasButton.peer.getY() + AntiAliasButton.preferredSize.height )
+
 
     private val tool_height = row2_y + toolbox_options(0).preferredSize.height
 
@@ -312,6 +328,7 @@ object FireEmblemCharacterCreator extends Frame  {
     def draw_images(): Unit = {
         val pMin = 0;
         var portrait = deep_copy( Portrait.blank_img )
+        var portrait_1t1 = deep_copy_sized( Exporter.FESmallDim.width, Exporter.FESmallDim.height )
         // var token = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB)
         var pixel: Color = null
         var new_pixel: Color = null
@@ -322,8 +339,10 @@ object FireEmblemCharacterCreator extends Frame  {
 
 
         def draw_pixel( img: BufferedImage, x: Int, y: Int, dx: Int, dy: Int, parser: PixelParser.Type, border_color: Color ): Unit = {
-            val ox = (x+dx)*2
-            val oy = (y+dy)*2
+            val xdx = x+dx
+            val ydy = y+dy
+            val ox = xdx*2
+            val oy = ydy*2
             if ( oy >= pMin && oy < portrait.getHeight() && ox > pMin && ox < portrait.getWidth() ) {
                 pixel = Color( img.getRGB( x, y ), true )
                 if(pixel.getAlpha() != 0) {
@@ -332,6 +351,7 @@ object FireEmblemCharacterCreator extends Frame  {
                     val rgb = new_pixel.getRGB()
 
                     //Image size x4
+                    portrait_1t1.setRGB( xdx, ydy, rgb )
                     portrait.setRGB( ox, oy, rgb )
                     portrait.setRGB( ox + 1, oy, rgb )
                     portrait.setRGB( ox, oy + 1, rgb )
@@ -370,6 +390,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
         ColorCounter.set( unique_colors.size )
         Portrait.panel.setImage( portrait )
+        Portrait.fesize_img = portrait_1t1
         Portrait.panel.repaint()
     }
 
@@ -462,10 +483,12 @@ object FireEmblemCharacterCreator extends Frame  {
                 val (ax, ay) = a._1
                 written_pixels += ( a._1 )
 
+
                 op_on_scaled(ax, ay) { (nx, ny) =>
                     portrait.setRGB( nx, ny, ncDark )
-                    
                 }
+                Portrait.fesize_img.setRGB( ax, ay, ncDark )
+
                 val (dx, dy) = a._2.directions
                 val (ix, iy) = a._2.img_coords
 
@@ -484,9 +507,12 @@ object FireEmblemCharacterCreator extends Frame  {
                         if rmi._1 < 1
                         (over_x, over_y) <- FACET.img_to_portrait.get( lix, liy )
                         if written_pixels.contains( (over_x, over_y) ) == false
-                    do op_on_scaled( over_x, over_y ) { (nx, ny) =>
+                    do {
+                        Portrait.fesize_img.setRGB( over_x, over_y, ncDark )
+                        op_on_scaled( over_x, over_y ) { (nx, ny) =>
                             portrait.setRGB( nx, ny, ncLight )
                         }
+                    }
             }
 
             // op_on_scaled(x, y) { (nx, ny) => 
@@ -505,6 +531,13 @@ object FireEmblemCharacterCreator extends Frame  {
 def deep_copy(bi: BufferedImage): BufferedImage =
     val cm = bi.getColorModel()
     new BufferedImage( cm, bi.copyData(null), cm.isAlphaPremultiplied(), null )
+
+def deep_copy_sized(w: Int, h: Int, bi: BufferedImage = FireEmblemCharacterCreator.Portrait.blank_img): BufferedImage =
+    val cm = bi.getColorModel()
+    new BufferedImage( cm , cm.createCompatibleWritableRaster(w, h) 
+        , cm.isAlphaPremultiplied() , null )
+    
+
 
 
 //RECOLORS EVERYTHING
