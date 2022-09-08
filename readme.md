@@ -30,8 +30,10 @@ v3.0.1 Changelog:
 - Bug Fixed: "Anti-Alias" doesn't account for scaling & rotation
 - Bug Fixed: "Anti-Alias" overwrites pixels it shouldn't (eyebrows and other parts of the face - AA should only be touching skin, and light skin at that!)
 
+v3.0.2 Changelog:
+- Bug Fixed: Portrait border cuts off pixels
+- Bug Fixed: Large token images (e.g. FalcoKnight) throw an out of bounds error.
+
 v3 Bugs Found:
 - Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
-- Portrait border cuts off pixels
 - Lack of control over AA's two colors used
-- Large token images (e.g. FalcoKnight) throw an out of bounds error.

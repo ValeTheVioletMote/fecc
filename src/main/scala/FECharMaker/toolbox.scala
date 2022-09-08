@@ -21,7 +21,7 @@ object Toolbox {
             case e: e with Elem => e.preferredSize
         }
 
-    class ImageSelector( search_word: String, label: String, alt_empty: Boolean = false, val pixel_parser: PixelParser.Type ) extends Elem:
+    class ImageSelector( search_word: String, label: String, alt_empty: Boolean = false, val pixel_parser: PixelParser.Type, horizontal: Boolean = false ) extends Elem:
         private val full_search = search_word + ".png"
         private var selected: String = ( if alt_empty then "Emptytok.png" else "Empty.png" )
         val files = File("resources", selected) 
@@ -37,9 +37,10 @@ object Toolbox {
         // val children = Seq( ElemLiteral(new Label(label) { xLayoutAlignment = 0.5; preferredSize = Dimension(ToolboxWidth,pieceHeight) })
         // , ElemLiteral(selector, 0, pieceHeight) )
 
-        val children = Seq( ElemLiteral(lblbtn), ElemLiteral(selector, 0, pieceHeight) )
+        val children = Seq( ElemLiteral(lblbtn)
+        , if horizontal == false then ElemLiteral(selector, rely=pieceHeight) else ElemLiteral(selector, relx=ToolboxWidth ) )
 
-        preferredSize = Dimension(ToolboxWidth,pieceHeight*2)
+        preferredSize = Dimension(ToolboxWidth, if horizontal == false then pieceHeight*2 else pieceHeight)
 
         listenTo(selector.selection)
         reactions += {

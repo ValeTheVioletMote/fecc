@@ -63,6 +63,28 @@ import FECharMaker.GameColors.ColorValPalette
 import FECharMaker.Toolbox.{ImageSelector, OptionToolbox}
 import FECharMaker.ColorToolbox.{ColorSelectDisplay}
 
+object DimExtensions {
+    extension (dim: Dimension) {
+        def +(mod_by: Int): Dimension = Dimension( dim.width + mod_by, dim.height + mod_by )
+        def +(mod_tuple: (Int, Int)): Dimension = Dimension( dim.width + mod_tuple._1, dim.height + mod_tuple._2 ) 
+        def +(mod_dim: Dimension): Dimension = Dimension( dim.width + mod_dim.width, dim.height + mod_dim.height ) 
+
+
+        def -(mod_by: Int): Dimension = Dimension( dim.width - mod_by, dim.height - mod_by )
+        def -(mod_tuple: (Int, Int)): Dimension = Dimension( dim.width - mod_tuple._1, dim.height - mod_tuple._2 ) 
+        def -(mod_dim: Dimension): Dimension = Dimension( dim.width - mod_dim.width, dim.height - mod_dim.height ) 
+
+        def *(mod_by: Int): Dimension = Dimension( dim.width * mod_by, dim.height * mod_by )
+        def *(mod_tuple: (Int, Int)): Dimension = Dimension( dim.width * mod_tuple._1, dim.height * mod_tuple._2 ) 
+        def *(mod_dim: Dimension): Dimension = Dimension( dim.width * mod_dim.width, dim.height * mod_dim.height ) 
+
+        def /(mod_by: Int): Dimension = Dimension( dim.width / mod_by, dim.height / mod_by )
+        def /(mod_tuple: (Int, Int)): Dimension = Dimension( dim.width / mod_tuple._1, dim.height / mod_tuple._2 ) 
+        def /(mod_dim: Dimension): Dimension = Dimension( dim.width / mod_dim.width, dim.height / mod_dim.height ) 
+    }
+}
+
+import DimExtensions._
 
 
 trait Elem extends Component { val children: Seq[Elem | ElemLiteral] ; var relx: Int = 0 ; var rely: Int = 0 }
@@ -160,7 +182,6 @@ object FireEmblemCharacterCreator extends Frame  {
     object Exporter extends Elem {
 
         val FESmallDim = Dimension(96,96)
-        val FESmallTokDim = Dimension(64,64)
 
         private val filename_inp = TextField("base_file_name")
         filename_inp.preferredSize = FinalTextsDim
@@ -175,8 +196,8 @@ object FireEmblemCharacterCreator extends Frame  {
         private val token_export = Button("Export Token")(export_image(TokenImg.panel.image, "_token"))
         token_export.preferredSize = FinalButtonsDim
 
-        private val token_small_export = Button(s"Token ${FESmallTokDim.width}x${FESmallTokDim.height}")
-            (export_image(TokenImg.fesize_img, s"_token_${FESmallTokDim.width}_${FESmallTokDim.height}"))
+        private val token_small_export = Button("Token Small")
+            (export_image(TokenImg.fesize_img, "_token_small"))
         token_small_export.preferredSize = FinalButtonsDim
 
         preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalButtonsDim.height * 4 )
@@ -202,17 +223,18 @@ object FireEmblemCharacterCreator extends Frame  {
 
     class ImageViewer(private val blank: "Portrait" | "Tok", val dim: Dimension ) extends Elem:
         private val blank_path: Path = Resources.base.resolve( "Blank"+blank+".png" )
-        val panel = ImagePanel( blank_path.toString() )
+        val panel = ImagePanel( blank_path.toString(), dim )
         val blank_img = ImageIO.read( blank_path.toFile() )
         if(blank_img == null) then println( blank_path.toString()+" is bad path!" )
         var fesize_img = blank_img
         val children = Seq( ElemLiteral(panel) )
-        preferredSize = dim
+        preferredSize = dim + (ImagePanel.border_size * 2)
 
     // var HAIRB = Interactable()
     val Portrait = ImageViewer("Portrait", Dimension(192,192)) 
-    val TokenImg = ImageViewer("Tok", Dimension(128,128)) 
-    val TokenTB = new ImageSelector( "Token", "Token", true, PixelParser.Type.Body )
+    val TokenTB = new ImageSelector( "Token", "Token", true, PixelParser.Type.Body, horizontal = true )
+    val largest_token_size = TokenTB.files.map(f => ImageIO.read(f).getWidth()).reduce( (a,b) => if a > b then a else b ) * 2
+    val TokenImg = ImageViewer("Tok", Dimension(largest_token_size, largest_token_size) ) 
     val Face = OptionToolbox(label_str = "Face", search_word = "Face"
                     , draw_priority = 1, pixel_parser = PixelParser.Type.Face )
     val Armor = OptionToolbox(label_str = "Armor", search_word = "Armor", draw_priority = 0 )
@@ -281,13 +303,13 @@ object FireEmblemCharacterCreator extends Frame  {
 
     
     private var upper_right_offset = GeneralPadding
-    private val row2_y = Portrait.preferredSize.height
+    private val row2_y = Math.max( Portrait.preferredSize.height, TokenImg.preferredSize.height)
 
     Body.render_elem(Portrait, upper_right_offset, 0)
     upper_right_offset += Portrait.preferredSize.width
     Body.render_elem(TokenImg, upper_right_offset, 0)
-    Body.render_elem(TokenTB, upper_right_offset, TokenImg.preferredSize.height)
     upper_right_offset += TokenImg.preferredSize.width
+    Body.render_elem(TokenTB, upper_right_offset, TokenImg.preferredSize.height - TokenTB.preferredSize.height)
     private val color_row2_xoff = TokenTB.preferredSize.width - TokenImg.preferredSize.width
 
     private val color_div = 4
@@ -338,8 +360,6 @@ object FireEmblemCharacterCreator extends Frame  {
         val pMin = 0;
         val portrait = deep_copy( Portrait.blank_img )
         val portrait_1t1 = deep_copy_sized( Exporter.FESmallDim.width, Exporter.FESmallDim.height )
-        val token = deep_copy( TokenImg.blank_img )
-        val token_1t1 = deep_copy_sized( Exporter.FESmallTokDim.width, Exporter.FESmallTokDim.height, TokenImg.blank_img )
         // var token = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB)
         var pixel: Color = null
         var new_pixel: Color = null
@@ -394,6 +414,9 @@ object FireEmblemCharacterCreator extends Frame  {
         do draw_pixel(img=img, x=x, y=y , dx=dx, dy=dy, parser=tbo.pixel_parser, tbo.border_color_btn.get_color)
 
         val tok_tb_img = TokenTB.get_image()
+        val token = deep_copy_sized( tok_tb_img.getWidth * 2, tok_tb_img.getHeight * 2, TokenImg.blank_img )
+        val token_1t1 = deep_copy_sized( tok_tb_img.getWidth, tok_tb_img.getHeight, TokenImg.blank_img )
+
         for
             x <- pMin until tok_tb_img.getWidth()
             y <- pMin until tok_tb_img.getHeight()

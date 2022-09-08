@@ -9,14 +9,19 @@ import java.awt.Color
 import java.awt.Dimension
 import java.io.File
 
-class ImagePanel(filename: String) extends Panel:
+class ImagePanel(filename: String, size: Dimension) extends Panel:
     var image: BufferedImage = ImageIO.read(new File(filename))
-    val border_size = 5
-    border = LineBorder(Color.GRAY, border_size)
+    border = LineBorder(Color.GRAY, ImagePanel.border_size)
     override def paintComponent(g: Graphics2D): Unit = 
         // For some reason not having this causes a bleed effect (sometimes) but unclear why
         super.paintComponent(g)
-        peer.setSize( Dimension( 2*border_size + image.getWidth(),  2*border_size + image.getHeight) )
-        g.drawImage( image, border_size, border_size, null )
+        peer.setSize( Dimension( 2*ImagePanel.border_size + size.width,  2*ImagePanel.border_size + size.height) )
+        val excess_w_d2 = (size.width - image.getWidth) / 2
+        val excess_h_d2 = (size.height - image.getHeight) / 2
+        g.drawImage( image, ImagePanel.border_size + excess_w_d2, ImagePanel.border_size + excess_h_d2, null )
     def setImage(new_image: BufferedImage) =
         image = new_image
+
+object ImagePanel {
+    val border_size = 5
+}
