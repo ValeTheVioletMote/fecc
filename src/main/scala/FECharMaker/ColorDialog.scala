@@ -9,7 +9,7 @@ import java.awt.Dimension
 import scala.swing.Dialog
 import scala.swing.BoxPanel
 import scala.swing.Orientation
-import FECharMaker.FireEmblemCharacterCreator.ColorSelectDisplay
+import FECharMaker.ColorToolbox.ColorSelectDisplay
 import FECharMaker.FireEmblemCharacterCreator.draw_images
 import scala.swing.Component
 import java.awt.Graphics2D
