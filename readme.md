@@ -34,6 +34,7 @@ v3.0.2 Changelog:
 - Bug Fixed: Portrait border cuts off pixels
 - Bug Fixed: Large token images (e.g. FalcoKnight) throw an out of bounds error.
 
-v3 Bugs Found:
+v3 Bugs Found / Features desired:
 - Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
 - Lack of control over AA's two colors used
+- Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
