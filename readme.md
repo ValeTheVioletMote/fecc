@@ -25,6 +25,3 @@ v3 Changelog:
 - "Anti-Aliasing" of where the hair meets the face
 - Unique colors in use counter
 - Export of GBA compatible size png
-
-To be done:
-- Token display & export rewrite

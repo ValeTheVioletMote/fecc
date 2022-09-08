@@ -160,6 +160,7 @@ object FireEmblemCharacterCreator extends Frame  {
     object Exporter extends Elem {
 
         val FESmallDim = Dimension(96,96)
+        val FESmallTokDim = Dimension(64,64)
 
         private val filename_inp = TextField("base_file_name")
         filename_inp.preferredSize = FinalTextsDim
@@ -171,15 +172,20 @@ object FireEmblemCharacterCreator extends Frame  {
             (export_image(Portrait.fesize_img, s"_${FESmallDim.width}_${FESmallDim.height}"))
         small_export.preferredSize = FinalButtonsDim
 
-        private val token_export = Button("Export Token")(export_image(Portrait.panel.image))
+        private val token_export = Button("Export Token")(export_image(TokenImg.panel.image, "_token"))
         token_export.preferredSize = FinalButtonsDim
 
-        preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalButtonsDim.height * 3 )
+        private val token_small_export = Button(s"Token ${FESmallTokDim.width}x${FESmallTokDim.height}")
+            (export_image(TokenImg.fesize_img, s"_token_${FESmallTokDim.width}_${FESmallTokDim.height}"))
+        token_small_export.preferredSize = FinalButtonsDim
+
+        preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalButtonsDim.height * 4 )
 
         val children = Seq( ElemLiteral( filename_inp )
             , ElemLiteral(norm_export , rely = filename_inp.preferredSize.height )
             , ElemLiteral(small_export , rely = filename_inp.preferredSize.height + FinalButtonsDim.height )
             , ElemLiteral(token_export , rely = filename_inp.preferredSize.height + FinalButtonsDim.height *2 )
+            , ElemLiteral(token_small_export , rely = filename_inp.preferredSize.height + FinalButtonsDim.height *3 )
         )
 
 
@@ -206,7 +212,7 @@ object FireEmblemCharacterCreator extends Frame  {
     // var HAIRB = Interactable()
     val Portrait = ImageViewer("Portrait", Dimension(192,192)) 
     val TokenImg = ImageViewer("Tok", Dimension(128,128)) 
-    val Token = new ImageSelector( "Token", "Token", true, PixelParser.Type.Body )
+    val TokenTB = new ImageSelector( "Token", "Token", true, PixelParser.Type.Body )
     val Face = OptionToolbox(label_str = "Face", search_word = "Face"
                     , draw_priority = 1, pixel_parser = PixelParser.Type.Face )
     val Armor = OptionToolbox(label_str = "Armor", search_word = "Armor", draw_priority = 0 )
@@ -251,7 +257,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
 
     val Elements: IndexedSeq[ ColorSelectDisplay | OptionToolbox | ImageViewer | ImageSelector ]
-        = IndexedSeq(Portrait, TokenImg, Token, Face, Armor, Hair, HairTB, Eyes, Skin
+        = IndexedSeq(Portrait, TokenImg, TokenTB, Face, Armor, Hair, HairTB, Eyes, Skin
         , Metal, Trim, Cloth, Leather, Accessory, AccessoryTB)
 
     var ExportFileName: TextField = TextField()
@@ -280,7 +286,9 @@ object FireEmblemCharacterCreator extends Frame  {
     Body.render_elem(Portrait, upper_right_offset, 0)
     upper_right_offset += Portrait.preferredSize.width
     Body.render_elem(TokenImg, upper_right_offset, 0)
+    Body.render_elem(TokenTB, upper_right_offset, TokenImg.preferredSize.height)
     upper_right_offset += TokenImg.preferredSize.width
+    private val color_row2_xoff = TokenTB.preferredSize.width - TokenImg.preferredSize.width
 
     private val color_div = 4
     private var color_div_coll_x = 0
@@ -289,6 +297,7 @@ object FireEmblemCharacterCreator extends Frame  {
         val row = idx / color_div
         if idx % color_div == 0 then color_div_coll_x = 0
         cd.relx = color_div_coll_x
+        if row == 1 then cd.relx += color_row2_xoff
         color_div_coll_x = color_div_coll_x + cd.preferredSize.width
         cd.rely = row * cd.preferredSize.height
         Body.render_elem(cd, upper_right_offset, 0)
@@ -327,8 +336,10 @@ object FireEmblemCharacterCreator extends Frame  {
 
     def draw_images(): Unit = {
         val pMin = 0;
-        var portrait = deep_copy( Portrait.blank_img )
-        var portrait_1t1 = deep_copy_sized( Exporter.FESmallDim.width, Exporter.FESmallDim.height )
+        val portrait = deep_copy( Portrait.blank_img )
+        val portrait_1t1 = deep_copy_sized( Exporter.FESmallDim.width, Exporter.FESmallDim.height )
+        val token = deep_copy( TokenImg.blank_img )
+        val token_1t1 = deep_copy_sized( Exporter.FESmallTokDim.width, Exporter.FESmallTokDim.height, TokenImg.blank_img )
         // var token = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB)
         var pixel: Color = null
         var new_pixel: Color = null
@@ -351,11 +362,15 @@ object FireEmblemCharacterCreator extends Frame  {
                     val rgb = new_pixel.getRGB()
 
                     //Image size x4
+
                     portrait_1t1.setRGB( xdx, ydy, rgb )
-                    portrait.setRGB( ox, oy, rgb )
-                    portrait.setRGB( ox + 1, oy, rgb )
-                    portrait.setRGB( ox, oy + 1, rgb )
-                    portrait.setRGB( ox + 1, oy + 1, rgb )
+                    for 
+                        dx <- 0 to 1
+                        dy <- 0 to 1
+                        ax = ox + dx
+                        ay = oy + dy
+                    do
+                        portrait.setRGB( ax, ay, rgb )                        
                 }
             }
         }
@@ -388,10 +403,34 @@ object FireEmblemCharacterCreator extends Frame  {
             dx = ( ( tbo.get_offx / 100.0) * portrait.getWidth() / 2 ).toInt
         do draw_pixel(img=img, x=x, y=y , dx=dx, dy=dy, parser=tbo.pixel_parser, tbo.border_color_btn.get_color)
 
+        val tok_tb_img = TokenTB.get_image()
+        for
+            x <- pMin until tok_tb_img.getWidth()
+            y <- pMin until tok_tb_img.getHeight()
+            px = Color( tok_tb_img.getRGB( x, y ), true )
+            if px.getAlpha() != 0
+            np = PixelParser( px, PixelParser.Type.Body, DEFAULT_BORDER_COLOR ).getRGB()
+        do {
+            token_1t1.setRGB( x, y, np )
+            for
+                dx <- 0 to 1
+                dy <- 0 to 1
+                ox = x * 2
+                oy = y * 2
+            do {
+                token.setRGB( ox + dx, oy + dy, np )
+            }
+        }
+            
+
+
         ColorCounter.set( unique_colors.size )
         Portrait.panel.setImage( portrait )
         Portrait.fesize_img = portrait_1t1
         Portrait.panel.repaint()
+        TokenImg.panel.setImage( token )
+        TokenImg.fesize_img = token_1t1
+        TokenImg.panel.repaint()
     }
 
     def draw_antialias() =
