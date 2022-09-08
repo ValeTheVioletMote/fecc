@@ -19,7 +19,7 @@ object ColorDialog {
     class ColorShadePreview() extends Component:
         val shade_width = 50
         val shade_height = 50
-        preferredSize = Dimension(1, shade_height)
+        preferredSize = Dimension(1, shade_height * 2)
         override def paint(g: Graphics2D): Unit = 
             val shades = ColorDialog.shades.toSeq.sortBy( _._1 ).map(_._2)
             var x_used = 0
@@ -27,7 +27,15 @@ object ColorDialog {
                 g.setColor( color )
                 g.fillRect( x_used, 0, shade_width, shade_height )
                 x_used = x_used + shade_width
-            val new_size = Dimension( shade_width * shades.length, shade_height )
+            ColorDialog.disp.foreach( d => {
+                var x_used2 = 0
+                for color <- d.shades.toSeq.sortBy( _._1 ).map(_._2) do
+                    g.setColor( color )
+                    g.fillRect( x_used2, shade_height, shade_width, shade_height )
+                    x_used2 = x_used2 + shade_width
+                if x_used2 > x_used then x_used = x_used2
+            } )
+            val new_size = Dimension( shade_width * shades.length, shade_height * 2 )
             if peer.getSize() != new_size then
                 peer.setSize( new_size )
                 peer.setPreferredSize( new_size )
@@ -52,6 +60,7 @@ object ColorDialog {
         state match {
             case ReqOperation.Palette(disp) => Some(disp)
             case ReqOperation.Shade(disp, _, _) => Some(disp)
+            case ReqOperation.PaletteOverride(disp, _) => Some(disp)
             case _ => None
         }
 
