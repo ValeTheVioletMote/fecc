@@ -39,3 +39,4 @@ v3 Bugs Found / Features desired:
 - Lack of control over AA's two colors used
 - Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - Save/Load a character edit for further working/tweaking.
+- Offset hair & face combos not working correctly.
