@@ -35,8 +35,9 @@ v3.0.2 Changelog:
 - Bug Fixed: Large token images (e.g. FalcoKnight) throw an out of bounds error.
 
 v3 Bugs Found / Features desired:
-- Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
-- Lack of control over AA's two colors used
-- Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
-- Save/Load a character edit for further working/tweaking.
-- Offset hair & face combos not working correctly.
+- [FTR] Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
+- [FTR] Lack of control over AA's two colors used
+- [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
+- [FTR] Save/Load a character edit for further working/tweaking.
+- [BUG] Offset hair & face combos not working correctly with Anti-Alias.
+- [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
