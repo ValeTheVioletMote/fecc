@@ -6,8 +6,17 @@ import scala.swing.Action
 import scala.swing.Button
 import scala.collection.MapView
 import FECharMaker.ColorDialog
+import java.util.regex.Pattern
 
 object ColorToolbox {
+
+    extension(color: Color) {
+        def to_hex_string: String = 
+            "#" + Integer.toHexString(color.getRed())
+            + Integer.toHexString(color.getGreen())
+            + Integer.toHexString(color.getBlue())
+    }
+
     private val ColorLabelPrefSize = Dimension(50,30)
     private val ButtonPrefSize = Dimension(ColorLabelPrefSize.width * 3, 50)
 
@@ -38,6 +47,9 @@ object ColorToolbox {
 
         button.xLayoutAlignment = 0.5
 
+
+            
+
         private val shade_vis = (for
             (red_idx, idx) <- shades.keys.toSeq.sorted.zipWithIndex
             b = ColorShadeButton( SelDisp, red_idx )
@@ -67,4 +79,19 @@ object ColorToolbox {
             shades = new_shades
             new_base_color.foreach( nbc => this.color = nbc )
             refresh_shades()
+
+        def savestring: String = 
+            color.to_hex_string + "||" + shades.map( (k,v) => k.toString() + "->" + v.to_hex_string ).mkString("||")
+        def load_savestring(savestr: String): Unit =
+            val pipesplit = savestr.split(Pattern.quote("||"))
+            color = Color.decode( pipesplit(0) )
+            shades = (for 
+                kvs <- pipesplit.slice(1, pipesplit.length)
+                kv = kvs.split( Pattern.quote( "->" ) )
+                k = kv(0).toInt
+                v = Color.decode(kv(1))
+            yield ( k -> v )).toMap.view
+            refresh_shades()
+
+            
 }

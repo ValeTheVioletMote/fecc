@@ -10,6 +10,7 @@ import scala.swing.Label
 import java.awt.Color
 import scala.swing.Action
 import FireEmblemCharacterCreator.draw_images
+import java.util.regex.Pattern
 
 object Toolbox {
   
@@ -49,6 +50,7 @@ object Toolbox {
 
         def set_by_index(idx: Int) = 
             selector.selection.index = idx
+        def selection_index = selector.selection.index
 
         def get_image() =
             ImageIO.read( files(selector.selection.index) )
@@ -133,4 +135,20 @@ object Toolbox {
         def get_offy = omanip.get_offy
         def get_scale = omanip.get_scale
         def get_rotate = omanip.get_rotate
+
+        def savestring: String =
+            import ColorToolbox.to_hex_string
+            Seq( oselect.selection_index, omanip.slide_offx.get_value()
+                , omanip.slide_offy.get_value(), omanip.slide_scale.get_value()
+                , omanip.slide_rotate.get_value(), border_color_btn.get_color.to_hex_string )
+            .map(_.toString())
+            .mkString("||")
+        def load_savestring(savestr: String): Unit =
+            val s = savestr.split( Pattern.quote("||") )
+            oselect.set_by_index( s(0).toInt )
+            omanip.slide_offx.set_value( s(1).toInt )
+            omanip.slide_offy.set_value( s(2).toInt )
+            omanip.slide_scale.set_value( s(3).toInt )
+            omanip.slide_rotate.set_value( s(4).toInt )
+            border_color_btn.set_color( Color.decode( s(5) ) )
 }
