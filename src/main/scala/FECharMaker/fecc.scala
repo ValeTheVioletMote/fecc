@@ -345,16 +345,12 @@ object FireEmblemCharacterCreator extends Frame  {
                     color_mapping(k).load_savestring( v )
                 }
 
-                println("colors done")
-
                 for 
                     undelim <- data.slice(ts, te).split("\n")
                     kv = undelim.split( Pattern.quote( mapdelim ) )
                     k = kv(0)
                     v = kv(1)
                 do { 
-                    println("k:"+k)
-                    println("v:"+v)
                     toolbox_mapping(k).load_savestring( v ) 
                 }
 
