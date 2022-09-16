@@ -10,3 +10,4 @@ project/project
 metals.sbt
 practice.scala
 /release
+/*.fecc
