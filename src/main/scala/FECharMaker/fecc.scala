@@ -62,6 +62,10 @@ import scala.collection.MapView
 import FECharMaker.GameColors.ColorValPalette
 import FECharMaker.Toolbox.{ImageSelector, OptionToolbox}
 import FECharMaker.ColorToolbox.{ColorSelectDisplay}
+import java.io.FileInputStream
+import java.io.FileWriter
+import java.nio.file.Files
+import java.util.regex.Pattern
 
 object DimExtensions {
     extension (dim: Dimension) {
@@ -186,6 +190,9 @@ object FireEmblemCharacterCreator extends Frame  {
         private val filename_inp = TextField("base_file_name")
         filename_inp.preferredSize = FinalTextsDim
 
+        def filename: String = filename_inp.text
+        def filename_=(name: String): Unit = filename_inp.text = name 
+
         private val norm_export = Button("Export")(export_image(Portrait.panel.image))
         norm_export.preferredSize = FinalButtonsDim
 
@@ -200,7 +207,7 @@ object FireEmblemCharacterCreator extends Frame  {
             (export_image(TokenImg.fesize_img, "_token_small"))
         token_small_export.preferredSize = FinalButtonsDim
 
-        preferredSize = Dimension( FinalTextsDim.width, FinalTextsDim.height + FinalButtonsDim.height * 4 )
+        preferredSize = FinalTextsDim + ( 0, FinalButtonsDim.height * 4 )
 
         val children = Seq( ElemLiteral( filename_inp )
             , ElemLiteral(norm_export , rely = filename_inp.preferredSize.height )
@@ -212,14 +219,13 @@ object FireEmblemCharacterCreator extends Frame  {
 
         def export_image(img: BufferedImage, suffix: String=""): Unit =
             val path = Paths.get(".")
-            val file_out_pathstr = path.resolve(filename_inp.text+suffix+".png").toAbsolutePath().toString()
+            val file_out_pathstr = path.resolve(filename+suffix+".png").toAbsolutePath().toString()
             val file_out = File(file_out_pathstr)
             try
                 ImageIO.write( img, "PNG", file_out )
             catch
                 _ => println("Unable to write to file: " + file_out_pathstr)
     }
-
 
     class ImageViewer(private val blank: "Portrait" | "Tok", val dim: Dimension ) extends Elem:
         private val blank_path: Path = Resources.base.resolve( "Blank"+blank+".png" )
@@ -277,11 +283,6 @@ object FireEmblemCharacterCreator extends Frame  {
     val BodyColors = Seq( Hair, Skin, Metal, Trim, Cloth, Leather )
     val FaceColors = Seq( Eyes, Skin, Accessory, Trim, Cloth, Leather )
 
-
-    val Elements: IndexedSeq[ ColorSelectDisplay | OptionToolbox | ImageViewer | ImageSelector ]
-        = IndexedSeq(Portrait, TokenImg, TokenTB, Face, Armor, Hair, HairTB, Eyes, Skin
-        , Metal, Trim, Cloth, Leather, Accessory, AccessoryTB)
-
     var ExportFileName: TextField = TextField()
     var Sliders = Array[Slider]()
     var Boxes = Array[ComboBox[String]]()
@@ -294,14 +295,104 @@ object FireEmblemCharacterCreator extends Frame  {
     title = "Fire Emblem Character Creator"
 
 
+    private val __color_mapping: Seq[(String, ColorSelectDisplay)] = 
+        Seq( "hair" -> Hair, "eyes" -> Eyes, "skin" -> Skin, "metal" -> Metal, "trim" -> Trim
+        , "cloth" -> Cloth, "leather"->Leather, "accessory" -> Accessory )
 
-    val color_options = 
-            Elements.collect{ case e: el with ColorSelectDisplay => e }
-    val toolbox_options = 
-            Elements.collect{ case e: el with OptionToolbox => e }
+    private val __toolbox_mapping: Seq[(String, OptionToolbox)] =
+        Seq( "face" -> Face, "armor" -> Armor, "hair" -> HairTB, "accessory" -> AccessoryTB )
+
+    val color_options = __color_mapping.map(_._2).toIndexedSeq
+    val toolbox_options = __toolbox_mapping.map(_._2).toIndexedSeq
+
+    val color_mapping = __color_mapping.toMap
+    val toolbox_mapping = __toolbox_mapping.toMap
 
 
-    
+    object SaverLoader extends Elem {
+        private val save_btn = Button("Save"){ export_savefile() }
+        save_btn.preferredSize = FinalButtonsDim
+        private val load_btn = Button("Load"){ load_into_tool() }
+        load_btn.preferredSize = FinalButtonsDim
+
+        private def sepper(f: String) = "==="+f+"==="
+        private val color_start = sepper("COLOR_START")
+        private val color_end = sepper("COLOR_END")
+        private val toolbox_start = sepper("TOOLBOX_START")
+        private val toolbox_end = sepper("TOOLBOX_END") 
+        private val mapdelim = "::>"
+
+
+        // Change tool values, color values, change filename
+        private def load_into_tool() = {
+            val path = Paths.get(".")
+            val file_out_pathstr = path.resolve(Exporter.filename+".fecc")
+            try
+                val data = Files.readString(file_out_pathstr)
+                val cs = data.indexOf( "\n", data.indexOf(color_start) )+1
+                val ce = data.indexOf( "\n" + color_end )
+                val ts = data.indexOf( "\n", data.indexOf(toolbox_start) )+1
+                val te = data.indexOf( "\n" + toolbox_end )                
+
+                for 
+                    undelim <- data.slice(cs, ce).split("\n")
+                    kv = undelim.split( Pattern.quote( mapdelim ) )
+                    k = kv(0)
+                    v = kv(1)
+                do { 
+                    // println("k:"+k)
+                    // println("v:"+v)
+                    color_mapping(k).load_savestring( v )
+                }
+
+                println("colors done")
+
+                for 
+                    undelim <- data.slice(ts, te).split("\n")
+                    kv = undelim.split( Pattern.quote( mapdelim ) )
+                    k = kv(0)
+                    v = kv(1)
+                do { 
+                    println("k:"+k)
+                    println("v:"+v)
+                    toolbox_mapping(k).load_savestring( v ) 
+                }
+
+                val toks = data.indexOf( "\n", data.indexOf(toolbox_end) )+1
+                TokenTB.set_by_index( data.slice(toks, data.length).toInt )
+
+            catch
+                _ => println("Could not load file " + file_out_pathstr.toAbsolutePath().toString() )
+        }
+
+        private def export_savefile() = {
+            val colors = (
+            for 
+                (k,v) <- color_mapping
+            yield k + mapdelim + v.savestring).mkString("\n")
+            val tbxs = (
+            for
+                (k,v) <- toolbox_mapping
+            yield k + mapdelim + v.savestring).mkString("\n")
+
+            val data = color_start + "\n" + colors + "\n" + color_end + "\n" 
+                + toolbox_start + "\n" + tbxs + "\n" + toolbox_end + "\n" 
+                + TokenTB.selection_index
+
+            val path = Paths.get(".")
+            val file_out_pathstr = path.resolve(Exporter.filename+".fecc")
+            try
+                Files.writeString(file_out_pathstr, data)
+            catch
+                _ => println("Unable to write to file: " + file_out_pathstr.toAbsolutePath().toString())
+            
+        }
+        
+        preferredSize = FinalTextsDim + ( 0 , FinalButtonsDim.height )
+        val children = Seq( ElemLiteral( save_btn ), ElemLiteral( load_btn, rely=FinalButtonsDim.height ) )
+    }
+
+
     private var upper_right_offset = GeneralPadding
     private val row2_y = Math.max( Portrait.preferredSize.height, TokenImg.preferredSize.height)
 
@@ -341,6 +432,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
     Body.render_elem( Exporter, AntiAliasButton.peer.getX(), GeneralPadding + AntiAliasButton.peer.getY() + AntiAliasButton.preferredSize.height )
 
+    Body.render_elem( SaverLoader, AntiAliasButton.peer.getX(), GeneralPadding + Exporter.peer.getY() + Exporter.preferredSize.height  )
 
     private val tool_height = row2_y + toolbox_options(0).preferredSize.height
 
@@ -454,12 +546,12 @@ object FireEmblemCharacterCreator extends Frame  {
 
         class CoordTranslator( ot: OptionToolbox ):
             val img = adjust_img(img=ot.oselect.get_image(), scale=ot.get_scale, rotate=ot.get_rotate)
+            private val dx = ( ( ot.get_offx / 100.0 ) * portrait.getWidth() / 2 ).toInt
+            private val dy = ( ( ot.get_offy / 100.0 ) * portrait.getHeight() / 2 ).toInt
             val img_to_portrait = (for 
                 x <- 0 until img.getWidth()
                 y <- 0 until img.getHeight()
                 if Color( img.getRGB(x,y), true ).getAlpha() != 0
-                dx = ( ( ot.get_offx / 100.0 ) * portrait.getWidth() / 2 ).toInt
-                dy = ( ( ot.get_offy / 100.0 ) * portrait.getHeight() / 2 ).toInt
             yield ( (x,y) -> (x+dx, y+dy) )).toMap
             val portrait_to_img = img_to_portrait.map( (k,v) => (v,k) ).toMap
             def has_adjacent_img_blank( coords: (Int, Int) ): Boolean =
@@ -476,10 +568,14 @@ object FireEmblemCharacterCreator extends Frame  {
 
             protected case class DirectionalFind( img_coords: (Int, Int), directions: (Int, Int) )
             /**
-             * @return Returns a mapping of the Portrait Coords to the DirectionalFind
+             * Given a set of coords, check all around the coords for 
+                 new coords (with the direction the coords were required)
+                 that exist on the other image and not on the current image
+             * @return Returns a mapping of the Portrait Coords to the DirectionalFind 
+                    (which has the image coords of the other image 
+                    and the direction in which they were found)
             */ 
             def adjacent_points( img_coords: (Int, Int), other: CoordTranslator ) =
-                var is_adj = false
                 val src_portrait_coords = img_to_portrait( img_coords )
                 (for
                     x <- -1 to 1
@@ -489,7 +585,7 @@ object FireEmblemCharacterCreator extends Frame  {
                     px = src_portrait_coords._1 + x
                     py = src_portrait_coords._2 + y
                     c <- other.portrait_to_img.get( ( px, py ))
-                    if portrait_to_img.contains( c ) == false
+                    if portrait_to_img.contains( ( px, py ) ) == false
                 yield ( (px, py) -> DirectionalFind(c, (x, y)) )).toMap
                 
 
@@ -509,8 +605,9 @@ object FireEmblemCharacterCreator extends Frame  {
         val ncDark = rixmap(1)._2.getRGB()
         val ncLight = rixmap(0)._2.getRGB()
 
-        def can_override_face_pixel( x: Int, y: Int, rixmap_threshold: Int = 1 ): Boolean =
-            val override_ridx = Color(FACET.img.getRGB( x, y ), true).getRed() / 10
+        def can_override_face_pixel( prt_x: Int, prt_y: Int, rixmap_threshold: Int = 1 ): Boolean =
+            val img_coords = FACET.portrait_to_img( (prt_x, prt_y) )
+            val override_ridx = Color(FACET.img.getRGB( img_coords._1, img_coords._2 ), true).getRed() / 10
             (for 
                 rmi <- rixmap.find( (_, rixand) => rixand._1 == override_ridx )
             yield rmi._1 < rixmap_threshold).getOrElse(false)
@@ -539,18 +636,24 @@ object FireEmblemCharacterCreator extends Frame  {
             // Set the inital color darker then move out 1 square more in the same direction as the pixel was found
                 // and make that a shade lighter
             for a <- aps do {
-                val (ax, ay) = a._1
+                // Portrait coordinates
+                val (apx, apy) = a._1
                 
-                if can_override_face_pixel(ax, ay, 2) then
+                if can_override_face_pixel(apx, apy, 2) then
                     written_pixels += ( a._1 )
-                    op_on_scaled(ax, ay) { (nx, ny) =>
+                    op_on_scaled(apx, apy) { (nx, ny) =>
                         portrait.setRGB( nx, ny, ncDark )
                     }
-                    Portrait.fesize_img.setRGB( ax, ay, ncDark )
+                    Portrait.fesize_img.setRGB( apx, apy, ncDark )
                     
+
+                // Extend the FACE img coords by another px in the same direction
+                // We'll need to verify that this is again not our hair 
+                    // & is a skin pixel that we can also override
 
                 val (dx, dy) = a._2.directions
                 val (ix, iy) = a._2.img_coords
+                val (lix, liy) = (ix + dx, iy + dy)
 
                 // The checks here: 
                     // First, make sure it's a color we *should* override. That is, a lighter color.
@@ -559,15 +662,14 @@ object FireEmblemCharacterCreator extends Frame  {
                     // Then, we need to make sure the pixel is actually on the portrait
                     // Finally, check if this is a pixel we've already colored darker via written_pixels
 
-                val (lix, liy) = (ix + dx, iy + dy)
-                if HAIRT.portrait_to_img.contains( (lix, liy) ) == false 
-                    && can_override_face_pixel( lix, liy ) then
-                    for 
-                        (over_x, over_y) <- FACET.img_to_portrait.get( lix, liy )
-                        if written_pixels.contains( (over_x, over_y) ) == false
-                    do {
-                        Portrait.fesize_img.setRGB( over_x, over_y, ncDark )
-                        op_on_scaled( over_x, over_y ) { (nx, ny) =>
+                for
+                    (epx, epy) <- FACET.img_to_portrait.get( lix, liy )
+                    if written_pixels.contains( ( epx , epy ) ) == false
+                    && HAIRT.portrait_to_img.contains( (epx, epy) ) == false
+                    && can_override_face_pixel( epx, epy ) 
+                do {
+                        Portrait.fesize_img.setRGB( epx, epy, ncLight )
+                        op_on_scaled( epx, epy ) { (nx, ny) =>
                             portrait.setRGB( nx, ny, ncLight )
                         }
                     }
@@ -577,7 +679,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
 
                 
-            //     portrait.setRGB( nx, ny, Color(255,0,0,255).getRGB() )
+            //     portrait.setRGB( nx, ny, Color(0,255,0,255).getRGB() )
             // }
             // for
         }
