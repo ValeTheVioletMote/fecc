@@ -43,3 +43,5 @@ v3 Bugs Found / Features desired:
 - [FTR] Lack of control over AA's two colors used
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
+- [BUG] Out of bounds on anti-aliasing (cause not yet found, but have save file for testing against)
+- [BUG?] Save/Load not working on Windows
