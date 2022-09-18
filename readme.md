@@ -44,6 +44,6 @@ v3 Bugs Found / Features desired:
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
 - [BUG] Out of bounds on anti-aliasing (cause not yet found, but have save file for testing against)
-- [BUG?] Save/Load not working on Windows
+- [BUG] Save/Load not working on Windows
 - [FTR] 3a203f as the default outline (fe8)
 - [FTR] F8F8C0 F8D070 E89850 987048 604848 as a new palette for skin & as the default skin
