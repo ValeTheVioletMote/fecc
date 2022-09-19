@@ -40,7 +40,6 @@ v3.0.3 Changelog:
 
 v3.0.4 Changelog:
 - Bug Fixed: Out of bounds on anti-aliasing (rare cases)
-- Bug Fixed: Well, probably: Save/Load not working on Windows (I use Linux & can't test)
 - Feature Added: 382040 as the default outline (fe8)
 - Feature Added: F8F8C0 F8D070 E89850 987048 604848 (ephraim skin) as a new palette for skin & as the default skin
 - Note, the colors are thanks to Rawr776.
@@ -51,3 +50,5 @@ v3 Bugs Found / Features desired:
 - [FTR] Lack of control over AA's two colors used
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
+- [BUG] Save/Load not working on Windows
+- [BUG] Close doesn't kill java instance (causes many instances of java to lurk each time you close)
