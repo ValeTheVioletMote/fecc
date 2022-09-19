@@ -160,6 +160,8 @@ object ColorIndices {
 object FireEmblemCharacterCreator extends Frame  {
     FireEmblemCharacterCreator.peer.setIconImage( ImageIO.read(getClass().getResource("images/tiras.png")) )
 
+    peer.setDefaultCloseOperation( javax.swing.WindowConstants.EXIT_ON_CLOSE )
+
     private val GeneralPadding = 20
     private val FinalButtonsDim = Dimension( 150, 30 )
     private val FinalTextsDim = Dimension( 200 , FinalButtonsDim.height )
