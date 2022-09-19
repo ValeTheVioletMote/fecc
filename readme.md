@@ -29,7 +29,7 @@ v3 Changelog:
 
 v3.1.0 Changelog: 
 - Critical Bug Fixed: Closing the window doesn't kill java instance (causes many instances of java to lurk each time you close - please check your task manager to kill lingering instances)
-- Save/Load not working on Windows
+- Save/Load not working on old java versions (commonly found installed on Windows)
 
 v3 Bugs Found / Features desired:
 - [FTR] Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
