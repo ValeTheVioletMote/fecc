@@ -25,6 +25,7 @@ v3 Changelog:
 - "Anti-Aliasing" of where the hair meets the face
 - Unique colors in use counter
 - Export of GBA compatible size png
+- Saving & Loading
 
 
 v3.1.0 Changelog: 
