@@ -214,7 +214,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
 
         def export_image(img: BufferedImage, suffix: String=""): Unit =
-            val path = Paths.get(".")
+            val path = Paths.get("")
             val file_out_pathstr = path.resolve(filename+suffix+".png").toAbsolutePath().toString()
             val file_out = File(file_out_pathstr)
             try
@@ -323,7 +323,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
         // Change tool values, color values, change filename
         private def load_into_tool() = {
-            val path = Paths.get(".")
+            val path = Paths.get("")
             val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
             try
                 val data = Files.readString(file_out_pathstr)
@@ -373,13 +373,12 @@ object FireEmblemCharacterCreator extends Frame  {
                 + toolbox_start + "\n" + tbxs + "\n" + toolbox_end + "\n" 
                 + TokenTB.selection_index
 
-            val path = Paths.get(".")
-            val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath().toString()
-            val file_out = File(file_out_pathstr)
+            val path = Paths.get("")
+            val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
             try
-                Files.writeString(file_out.toPath(), data)
+                Files.writeString(file_out_pathstr, data)
             catch
-                _ => println("Unable to write to file: " + file_out_pathstr)
+                _ => println("Unable to write to file: " + file_out_pathstr.toString())
             
         }
         
