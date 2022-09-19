@@ -66,6 +66,7 @@ import java.io.FileInputStream
 import java.io.FileWriter
 import java.nio.file.Files
 import java.util.regex.Pattern
+import java.nio.charset.StandardCharsets
 
 object DimExtensions {
     extension (dim: Dimension) {
@@ -320,43 +321,49 @@ object FireEmblemCharacterCreator extends Frame  {
         private val toolbox_end = sepper("TOOLBOX_END") 
         private val mapdelim = "::>"
 
+        private def string_to_file(path: Path, str: String): Path =
+            val bys = str.getBytes( StandardCharsets.UTF_8 )
+            val fos = Files.newOutputStream(path)
+            fos.write(bys)
+            path
+        
+        private def string_from_file(path: Path): String =
+            String( Files.readAllBytes(path), StandardCharsets.UTF_8 )
+
 
         // Change tool values, color values, change filename
         private def load_into_tool() = {
             val path = Paths.get("")
             val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
-            try
-                val data = Files.readString(file_out_pathstr)
-                val cs = data.indexOf( "\n", data.indexOf(color_start) )+1
-                val ce = data.indexOf( "\n" + color_end )
-                val ts = data.indexOf( "\n", data.indexOf(toolbox_start) )+1
-                val te = data.indexOf( "\n" + toolbox_end )                
+            val data = string_from_file( file_out_pathstr )
+            val cs = data.indexOf( "\n", data.indexOf(color_start) )+1
+            val ce = data.indexOf( "\n" + color_end )
+            val ts = data.indexOf( "\n", data.indexOf(toolbox_start) )+1
+            val te = data.indexOf( "\n" + toolbox_end )                
 
-                for 
-                    undelim <- data.slice(cs, ce).split("\n")
-                    kv = undelim.split( Pattern.quote( mapdelim ) )
-                    k = kv(0)
-                    v = kv(1)
-                do { 
-                    // println("k:"+k)
-                    // println("v:"+v)
-                    color_mapping(k).load_savestring( v )
-                }
+            for 
+                undelim <- data.slice(cs, ce).split("\n")
+                kv = undelim.split( Pattern.quote( mapdelim ) )
+                k = kv(0)
+                v = kv(1)
+            do { 
+                // println("k:"+k)
+                // println("v:"+v)
+                color_mapping(k).load_savestring( v )
+            }
 
-                for 
-                    undelim <- data.slice(ts, te).split("\n")
-                    kv = undelim.split( Pattern.quote( mapdelim ) )
-                    k = kv(0)
-                    v = kv(1)
-                do { 
-                    toolbox_mapping(k).load_savestring( v ) 
-                }
+            for 
+                undelim <- data.slice(ts, te).split("\n")
+                kv = undelim.split( Pattern.quote( mapdelim ) )
+                k = kv(0)
+                v = kv(1)
+            do { 
+                toolbox_mapping(k).load_savestring( v ) 
+            }
 
-                val toks = data.indexOf( "\n", data.indexOf(toolbox_end) )+1
-                TokenTB.set_by_index( data.slice(toks, data.length).toInt )
+            val toks = data.indexOf( "\n", data.indexOf(toolbox_end) )+1
+            TokenTB.set_by_index( data.slice(toks, data.length).toInt )
 
-            catch
-                _ => println("Could not load file " + file_out_pathstr.toString() )
         }
 
         private def export_savefile() = {
@@ -375,11 +382,7 @@ object FireEmblemCharacterCreator extends Frame  {
 
             val path = Paths.get("")
             val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
-            try
-                Files.writeString(file_out_pathstr, data)
-            catch
-                _ => println("Unable to write to file: " + file_out_pathstr.toString())
-            
+            string_to_file( file_out_pathstr, data )
         }
         
         preferredSize = FinalTextsDim + ( 0 , FinalButtonsDim.height )
