@@ -126,7 +126,7 @@ object Toolbox {
         val oselect = ImageSelector(search_word, label_str, alt_empty, pixel_parser)
         val omanip = OffsetManipulator()
         omanip.rely = oselect.preferredSize.height
-        val border_color_btn = BorderColorButton( DEFAULT_BORDER_COLOR )
+        val border_color_btn = BorderColorButton( GameColors.DEFAULT_BORDER_COLOR )
         border_color_btn.preferredSize = Dimension( ToolboxWidth, 30)
         border_color_btn.rely = omanip.rely + omanip.preferredSize.height
         val children = Seq(oselect, omanip, border_color_btn)

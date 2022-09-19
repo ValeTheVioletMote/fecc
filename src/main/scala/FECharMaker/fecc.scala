@@ -59,7 +59,7 @@ import java.awt.FlowLayout
 import FECharMaker.WrapLayout
 import scala.swing.Action
 import scala.collection.MapView
-import FECharMaker.GameColors.ColorValPalette
+import FECharMaker.GameColors.{ColorValPalette, DEFAULT_BORDER_COLOR}
 import FECharMaker.Toolbox.{ImageSelector, OptionToolbox}
 import FECharMaker.ColorToolbox.{ColorSelectDisplay}
 import java.io.FileInputStream
@@ -154,13 +154,7 @@ type ColorIndices = Map[Int, ColorIndexVal]
 object ColorIndices {
     def to_shades(cidxs: ColorIndices, color: Color): MapView[Int, Color] =
         cidxs.mapValues( ColorIndexVal.to_color(color, _) )
-}
-
-
-
-
-val DEFAULT_BORDER_COLOR = Color(0,0,0,255) 
-
+} 
 
 
 object FireEmblemCharacterCreator extends Frame  {
@@ -257,10 +251,12 @@ object FireEmblemCharacterCreator extends Frame  {
         , Map( 1 -> ColorIndexVal.Lighter(), 2 -> ColorIndexVal.Normal, 3 -> ColorIndexVal.Darker() ) 
         , prefabs = GameColors.HairColors )
 
-    val Skin = ColorSelectDisplay( label_str = "Skin", color = Color(248, 208, 152, 255)
+    val Skin = ColorSelectDisplay( label_str = "Skin", color = Color(0, 0, 0, 255)
         , Map( 4 -> ColorIndexVal.Lighter(), 5 -> ColorIndexVal.Normal, 6 -> ColorIndexVal.Darker()
         , 7 -> ColorIndexVal.Darker(2), 8 -> ColorIndexVal.Darker(3) )
         , prefabs = GameColors.SkinColors, cvpalettes = GameColors.SkinCVP )
+    Skin.set_shades( GameColors.DEFAULT_SKIN_COLOR.map( (civ, color) => ( Skin.cidxs.find((i, ociv) => civ == ociv ).get._1 , color) ).view )
+
     val Metal = ColorSelectDisplay( label_str =  "Metal", color = Color(100, 100, 100, 255)
         , Map(  9 -> ColorIndexVal.Lighter(), 10 -> ColorIndexVal.Normal, 11 -> ColorIndexVal.Darker() )
         , prefabs = GameColors.HairColors )
@@ -292,7 +288,7 @@ object FireEmblemCharacterCreator extends Frame  {
     contents = Body 
 
     font = Font("Calibri", Font.Bold, 12)
-    title = "Fire Emblem Character Creator"
+    title = "Fire Emblem Character Creator v3.0.4"
 
 
     private val __color_mapping: Seq[(String, ColorSelectDisplay)] = 
@@ -326,7 +322,7 @@ object FireEmblemCharacterCreator extends Frame  {
         // Change tool values, color values, change filename
         private def load_into_tool() = {
             val path = Paths.get(".")
-            val file_out_pathstr = path.resolve(Exporter.filename+".fecc")
+            val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
             try
                 val data = Files.readString(file_out_pathstr)
                 val cs = data.indexOf( "\n", data.indexOf(color_start) )+1
@@ -376,7 +372,7 @@ object FireEmblemCharacterCreator extends Frame  {
                 + TokenTB.selection_index
 
             val path = Paths.get(".")
-            val file_out_pathstr = path.resolve(Exporter.filename+".fecc")
+            val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
             try
                 Files.writeString(file_out_pathstr, data)
             catch
@@ -557,7 +553,11 @@ object FireEmblemCharacterCreator extends Frame  {
                 for 
                     x <- -1 to 1
                     y <- -1 to 1
-                    if Color( img.getRGB( img_x+x, img_y+y ), true ).getAlpha() == 0
+                    nx = img_x+x
+                    if nx < img.getWidth()
+                    ny = img_y+y
+                    if ny < img.getHeight()
+                    if Color( img.getRGB( nx, ny ), true ).getAlpha() == 0
                 do has_blank = true
             
                 has_blank

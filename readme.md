@@ -38,12 +38,16 @@ v3.0.3 Changelog:
 - Bug Fixed: Offset hair & face combos not working correctly with Anti-Alias.
 - Feature Added: Save/Load a character edit for further working/tweaking.
 
+v3.0.4 Changelog:
+- Bug Fixed: Out of bounds on anti-aliasing (rare cases)
+- Bug Fixed: Well, probably: Save/Load not working on Windows (I use Linux & can't test)
+- Feature Added: 382040 as the default outline (fe8)
+- Feature Added: F8F8C0 F8D070 E89850 987048 604848 (ephraim skin) as a new palette for skin & as the default skin
+- Note, the colors are thanks to Rawr776.
+
+
 v3 Bugs Found / Features desired:
 - [FTR] Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
 - [FTR] Lack of control over AA's two colors used
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
-- [BUG] Out of bounds on anti-aliasing (cause not yet found, but have save file for testing against)
-- [BUG] Save/Load not working on Windows
-- [FTR] 382040 as the default outline (fe8)
-- [FTR] F8F8C0 F8D070 E89850 987048 604848 as a new palette for skin & as the default skin

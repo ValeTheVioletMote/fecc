@@ -4,6 +4,6 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-swing" % "3.0.0"
 )
 
-version := "3.0.3"
+version := "3.0.4"
 
 assembly / mainClass := Some("FECharMaker.fecc")

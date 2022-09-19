@@ -30,6 +30,10 @@ object GameColors {
         
     }
 
+    val DEFAULT_BORDER_COLOR = hex("382040")
+
+    val DEFAULT_SKIN_COLOR = ColorValPalette.skin( "F8F8C0", "F8D070", "E89850", "987048", "604848" )
+
     val HairColors: List[Color] = List(  
         hex("e89088"), hex("d8847c"), hex("d8646c"), hex("d45870"), hex("bc3c58")
       , hex("f08878"), hex("f86860"), hex("f06060"), hex("e84c54"), hex("dc3848")
@@ -257,8 +261,10 @@ object GameColors {
         import ColorValPalette._
 
         List(
+            // ephraim
+        DEFAULT_SKIN_COLOR
             // A
-           skin("e8a474", "c07850", "985838", "744428", "483020"),  skin("c48860", "9c6c50", "805044", "604438", "483038") 
+        ,  skin("e8a474", "c07850", "985838", "744428", "483020"),  skin("c48860", "9c6c50", "805044", "604438", "483038") 
         ,  skin("b47c58", "986040", "784038", "583030", "403028") ,  skin("b47858", "986040", "784038", "583030", "403028") 
         ,  skin("c88c60", "a06850", "805044", "644838", "4e363a") ,  skin("b47850", "986040", "784038", "583030", "403028") 
         ,  skin("b47b62", "9c625a", "834a4a", "633f46", "503140") ,  skin("a8786c", "906050", "785040", "604438", "483038") 

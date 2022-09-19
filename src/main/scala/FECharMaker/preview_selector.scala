@@ -24,7 +24,7 @@ object PreviewSelector extends Elem {
                 y <- 0 until from.getHeight()
                 current = Color( from.getRGB(x,y), true )
                 if current.getAlpha() != 0
-                p = PixelParser( current, pp, DEFAULT_BORDER_COLOR ).getRGB()
+                p = PixelParser( current, pp, GameColors.DEFAULT_BORDER_COLOR ).getRGB()
             do  ret.setRGB(x, y, p)
 
         if(back_image.nonEmpty) write_img( back_image.get )
