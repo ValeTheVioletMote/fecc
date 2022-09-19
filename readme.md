@@ -26,29 +26,26 @@ v3 Changelog:
 - Unique colors in use counter
 - Export of GBA compatible size png
 
-v3.0.1 Changelog:
-- Bug Fixed: "Anti-Alias" doesn't account for scaling & rotation
-- Bug Fixed: "Anti-Alias" overwrites pixels it shouldn't (eyebrows and other parts of the face - AA should only be touching skin, and light skin at that!)
 
-v3.0.2 Changelog:
-- Bug Fixed: Portrait border cuts off pixels
-- Bug Fixed: Large token images (e.g. FalcoKnight) throw an out of bounds error.
-
-v3.0.3 Changelog:
-- Bug Fixed: Offset hair & face combos not working correctly with Anti-Alias.
-- Feature Added: Save/Load a character edit for further working/tweaking.
-
-v3.0.4 Changelog:
-- Bug Fixed: Out of bounds on anti-aliasing (rare cases)
-- Feature Added: 382040 as the default outline (fe8)
-- Feature Added: F8F8C0 F8D070 E89850 987048 604848 (ephraim skin) as a new palette for skin & as the default skin
-- Note, the colors are thanks to Rawr776.
-
+v3.0.1 Changelog: 
+- Critical Bug Fixed: Closing the window doesn't kill java instance (causes many instances of java to lurk each time you close - please check your task manager to kill lingering instances)
+- Save/Load not working on Windows
 
 v3 Bugs Found / Features desired:
 - [FTR] Sliders don't have fine-tuned control (you can click on the number labels for increments but it's still helpful if we had a number field. Perhaps also add arrows to the labels around the 0 to coax people into clicking on them naturally. )
 - [FTR] Lack of control over AA's two colors used
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
-- [BUG] Save/Load not working on Windows
-- [BUG] [CRITICAL] Close doesn't kill java instance (causes many instances of java to lurk each time you close)
+
+
+v3.0.x Changelog:
+- Bug Fixed: "Anti-Alias" doesn't account for scaling & rotation
+- Bug Fixed: "Anti-Alias" overwrites pixels it shouldn't (eyebrows and other parts of the face - AA should only be touching skin, and light skin at that!)
+- Bug Fixed: Portrait border cuts off pixels
+- Bug Fixed: Large token images (e.g. FalcoKnight) throw an out of bounds error.
+- Bug Fixed: Offset hair & face combos not working correctly with Anti-Alias.
+- Feature Added: Save/Load a character edit for further working/tweaking.
+- Bug Fixed: Out of bounds on anti-aliasing (rare cases)
+- Feature Added: 382040 as the default outline (fe8)
+- Feature Added: F8F8C0 F8D070 E89850 987048 604848 (ephraim skin) as a new palette for skin & as the default skin
+- Note, the colors are thanks to Rawr776.

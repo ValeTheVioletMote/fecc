@@ -290,7 +290,7 @@ object FireEmblemCharacterCreator extends Frame  {
     contents = Body 
 
     font = Font("Calibri", Font.Bold, 12)
-    title = "Fire Emblem Character Creator v3.0.4"
+    title = "Fire Emblem Character Creator v3.1.0"
 
 
     private val __color_mapping: Seq[(String, ColorSelectDisplay)] = 
@@ -356,7 +356,7 @@ object FireEmblemCharacterCreator extends Frame  {
                 TokenTB.set_by_index( data.slice(toks, data.length).toInt )
 
             catch
-                _ => println("Could not load file " + file_out_pathstr.toAbsolutePath().toString() )
+                _ => println("Could not load file " + file_out_pathstr.toString() )
         }
 
         private def export_savefile() = {
@@ -374,11 +374,12 @@ object FireEmblemCharacterCreator extends Frame  {
                 + TokenTB.selection_index
 
             val path = Paths.get(".")
-            val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath()
+            val file_out_pathstr = path.resolve(Exporter.filename+".fecc").toAbsolutePath().toString()
+            val file_out = File(file_out_pathstr)
             try
-                Files.writeString(file_out_pathstr, data)
+                Files.writeString(file_out.toPath(), data)
             catch
-                _ => println("Unable to write to file: " + file_out_pathstr.toAbsolutePath().toString())
+                _ => println("Unable to write to file: " + file_out_pathstr)
             
         }
         
