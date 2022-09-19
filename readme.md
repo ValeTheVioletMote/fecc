@@ -51,4 +51,4 @@ v3 Bugs Found / Features desired:
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
 - [BUG] Save/Load not working on Windows
-- [BUG] Close doesn't kill java instance (causes many instances of java to lurk each time you close)
+- [BUG] [CRITICAL] Close doesn't kill java instance (causes many instances of java to lurk each time you close)
