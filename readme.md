@@ -27,7 +27,7 @@ v3 Changelog:
 - Export of GBA compatible size png
 
 
-v3.0.1 Changelog: 
+v3.1.0 Changelog: 
 - Critical Bug Fixed: Closing the window doesn't kill java instance (causes many instances of java to lurk each time you close - please check your task manager to kill lingering instances)
 - Save/Load not working on Windows
 
