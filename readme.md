@@ -37,7 +37,7 @@ v3 Bugs Found / Features desired:
 - [FTR] Lack of control over AA's two colors used
 - [FTR] Randomization buttons like ivycase's fork (https://github.com/ivycase/CharacterCreatorRelease)
 - [BUG] Anti-Alias looks upward and sideward for shading which is not how shading actually works. (Need to make it look only downwards in every dir)
-
+- [FTR] Ability to flip pieces horizontally
 
 v3.0.x Changelog:
 - Bug Fixed: "Anti-Alias" doesn't account for scaling & rotation
@@ -49,4 +49,4 @@ v3.0.x Changelog:
 - Bug Fixed: Out of bounds on anti-aliasing (rare cases)
 - Feature Added: 382040 as the default outline (fe8)
 - Feature Added: F8F8C0 F8D070 E89850 987048 604848 (ephraim skin) as a new palette for skin & as the default skin
-- Note, the colors are thanks to Rawr776.
+- Note, the colors are thanks to Juan776.
