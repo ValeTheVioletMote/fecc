@@ -49,4 +49,4 @@ v3.0.x Changelog:
 - Bug Fixed: Out of bounds on anti-aliasing (rare cases)
 - Feature Added: 382040 as the default outline (fe8)
 - Feature Added: F8F8C0 F8D070 E89850 987048 604848 (ephraim skin) as a new palette for skin & as the default skin
-- Note, the colors are thanks to Juan776.
+- Note, the colors are thanks to Rawr776.
